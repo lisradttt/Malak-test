@@ -1,92 +1,69 @@
-(venv2) PS D:\zombie#نقيب> & D:/zombie#نقيب/venv2/Scripts/python.exe d:/zombie#نقيب/main.py
-[INFO]: بدء تشغيل البوت...
-Traceback (most recent call last):
-  File "d:\zombie#نقيب\main.py", line 31, in <module>
-    asyncio.run(main())
-  File "C:\Program Files\Python311\Lib\asyncio\runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python311\Lib\asyncio\runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python311\Lib\asyncio\base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "d:\zombie#نقيب\main.py", line 22, in main
-    await start_bot()
-  File "d:\zombie#نقيب\bot.py", line 57, in start_bot
+import asyncio
+import platform
+import subprocess
+import os
+from pyrogram.client import Client
+from pyrogram.sync import idle
+from config import API_ID, API_HASH, BOT_TOKEN, OWNER  # استدعاء المتغيرات مباشرة
+
+SESSION_FILE = "MusicBot.session"
+SEMO_FOLDER = "SEMO"
+
+def sync_time():
+    """مزامنة الوقت لتجنب BadMsgNotification[16]."""
+    try:
+        sys_platform = platform.system().lower()
+        if "windows" in sys_platform:
+            subprocess.run(["sc", "start", "w32time"], capture_output=True)
+            subprocess.run(["w32tm", "/resync", "/force"], capture_output=True)
+        else:
+            subprocess.run(["sudo", "timedatectl", "set-ntp", "true"], capture_output=True)
+    except Exception as e:
+        print(f"[WARN]: فشل مزامنة الوقت -> {e}")
+
+def ensure_semo_folder():
+    """تأكد من وجود فولدر SEMO."""
+    if not os.path.exists(SEMO_FOLDER):
+        os.makedirs(SEMO_FOLDER)
+        print(f"[INFO]: تم إنشاء فولدر المصنوع {SEMO_FOLDER}")
+
+def ensure_session():
+    """تأكد من وجود جلسة صالحة، وإعادة إنشاء جديدة إذا كانت قديمة."""
+    if not os.path.exists(SESSION_FILE):
+        print("[INFO]: لم يتم العثور على جلسة سابقة، سيتم إنشاء جلسة جديدة عند التشغيل.")
+    else:
+        print("[INFO]: تم العثور على جلسة موجودة، سيتم استخدامها.")
+
+# إنشاء البوت باستخدام بيانات الكونفيج
+bot = Client(
+    SESSION_FILE,
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN,
+    plugins={"root": "Maker"}
+)
+
+async def notify_owners(message: str):
+    """إرسال رسالة للمالكين مع حماية من أي خطأ."""
+    if isinstance(OWNER, list):
+        for owner_id in OWNER:
+            try:
+                await bot.send_message(owner_id, message)
+            except Exception as e:
+                print(f"[WARN]: لم يتم إرسال الرسالة للمالك {owner_id} -> {e}")
+
+async def start_bot():
+    print("[INFO]: بدء تشغيل البوت...")
     await bot.start()
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\methods\utilities\start.py", line 58, in start
-    is_authorized = await self.connect()
-                    ^^^^^^^^^^^^^^^^^^^^
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\methods\auth\connect.py", line 47, in connect
-    await self.session.start()
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 142, in start
-    raise e
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 109, in start
-    await self.send(raw.functions.Ping(ping_id=0), timeout=self.START_TIMEOUT)
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 333, in send
-    raise BadMsgNotification(result.error_code)
-pyrogram.errors.BadMsgNotification: [16] The msg_id is too low, the client time has to be synchronized.
-(venv2) PS D:\zombie#نقيب> & D:/zombie#نقيب/venv2/Scripts/python.exe d:/zombie#نقيب/main.py
-[INFO]: بدء تشغيل البوت...
-Unable to connect due to network issues: timed out
-Traceback (most recent call last):
-  File "d:\zombie#نقيب\main.py", line 31, in <module>
-    asyncio.run(main())
-  File "C:\Program Files\Python311\Lib\asyncio\runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python311\Lib\asyncio\runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python311\Lib\asyncio\base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "d:\zombie#نقيب\main.py", line 22, in main
-    await start_bot()
-  File "d:\zombie#نقيب\bot.py", line 57, in start_bot
-    await bot.start()
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\methods\utilities\start.py", line 58, in start
-    is_authorized = await self.connect()
-                    ^^^^^^^^^^^^^^^^^^^^
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\methods\auth\connect.py", line 47, in connect
-    await self.session.start()
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 142, in start
-    raise e
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 109, in start
-    await self.send(raw.functions.Ping(ping_id=0), timeout=self.START_TIMEOUT)
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 333, in send
-    raise BadMsgNotification(result.error_code)
-pyrogram.errors.BadMsgNotification: [16] The msg_id is too low, the client time has to be synchronized.
-(venv2) PS D:\zombie#نقيب> & D:/zombie#نقيب/venv2/Scripts/python.exe d:/zombie#نقيب/main.py
-[INFO]: بدء تشغيل البوت...
-Traceback (most recent call last):
-  File "d:\zombie#نقيب\main.py", line 31, in <module>
-    asyncio.run(main())
-  File "C:\Program Files\Python311\Lib\asyncio\runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python311\Lib\asyncio\runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python311\Lib\asyncio\base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "d:\zombie#نقيب\main.py", line 22, in main
-    await start_bot()
-  File "d:\zombie#نقيب\bot.py", line 57, in start_bot
-    await bot.start()
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\methods\utilities\start.py", line 58, in start
-    is_authorized = await self.connect()
-                    ^^^^^^^^^^^^^^^^^^^^
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\methods\auth\connect.py", line 47, in connect
-    await self.session.start()
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 142, in start
-    raise e
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 109, in start
-    await self.send(raw.functions.Ping(ping_id=0), timeout=self.START_TIMEOUT)
-  File "D:\zombie#نقيب\venv2\Lib\site-packages\pyrogram\session\session.py", line 333, in send
-    raise BadMsgNotification(result.error_code)
-pyrogram.errors.BadMsgNotification: [16] The msg_id is too low, the client time has to be synchronized.
-(venv2) PS D:\zombie#نقيب> 
+    await notify_owners("✅ البوت الآن يعمل.")
+    print("[INFO]: البوت يعمل الآن.")
+    ensure_semo_folder()  # تأكد من فولدر SEMO قبل أي عمليات
+    await idle()  # البوت يظل شغال
+
+if __name__ == "__main__":
+    sync_time()
+    ensure_session()
+    try:
+        asyncio.run(start_bot())
+    except Exception as e:
+        print(f"[ERROR]: {e}")
